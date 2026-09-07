@@ -6,6 +6,7 @@ README.md for the full rationale and citations.
 """
 
 from app.config import (
+    ALERT_CONTACTS,
     RAIN_SCORE_BREAKPOINTS_MM,
     RISK_LEVEL_BANDS,
     RISK_WEIGHTS,
@@ -145,6 +146,8 @@ def evaluate_village(village_id: str) -> dict:
         "river_discharge_m3s": flood["current_m3s"],
         "lead_time_hours": lead_time,
         "data_source": "open-meteo",
+        "has_alert_contacts": len(ALERT_CONTACTS.get(village["id"], [])) > 0,
+        "alert_contacts_count": len(ALERT_CONTACTS.get(village["id"], [])),
     }
 
 

@@ -52,7 +52,7 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <div>
-          <h1>Flash Flood & Landslide Early Warning</h1>
+          <h1>Flash Flood Early Warning</h1>
           <div className="subtitle">Wayanad District, Kerala — hyper-local risk from live rainfall, soil moisture & terrain data</div>
         </div>
         <div className="mode-toggle">

@@ -28,6 +28,8 @@ class VillageRisk(BaseModel):
     river_discharge_m3s: Optional[float] = None
     lead_time_hours: Optional[float] = None
     data_source: str = "open-meteo"
+    has_alert_contacts: bool = False
+    alert_contacts_count: int = 0
 
 
 class TrendPoint(BaseModel):
@@ -45,3 +47,15 @@ class ReplayResult(BaseModel):
     event_title: str
     event_date: str
     points: list[TrendPoint]
+
+
+class AlertResponse(BaseModel):
+    success: bool
+    village_id: str
+    village_name: str
+    risk_score: float
+    risk_level: str
+    recipients: list[str]
+    message: str
+    fast2sms_request_id: Optional[str] = None
+    mock: bool = False

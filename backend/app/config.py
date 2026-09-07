@@ -7,6 +7,24 @@ India's own weather service uses to call rain "heavy" / "very heavy" /
 kept explicit here so they're easy to defend or recalibrate.
 """
 
+import os
+from pathlib import Path
+
+# Attempt to load .env from backend directory if present
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+if _env_path.exists():
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(_env_path)
+    except ImportError:
+        # Simple fallback .env parser
+        with open(_env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip().strip("'\""))
+
 OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 OPEN_METEO_FLOOD_URL = "https://flood-api.open-meteo.com/v1/flood"
@@ -54,3 +72,95 @@ RISK_LEVEL_COLORS = {
     "High": "#ef6c00",
     "Severe": "#c62828",
 }
+
+# Fast2SMS Configuration (Quick SMS route - no DLT registration needed)
+def get_fast2sms_api_key() -> str:
+    key = os.getenv("FAST2SMS_API_KEY", "")
+    if not key or key == "your_fast2sms_api_key_here":
+        _env_path = Path(__file__).resolve().parent.parent / ".env"
+        if _env_path.exists():
+            with open(_env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("FAST2SMS_API_KEY="):
+                        found = line.split("=", 1)[1].strip().strip("'\"")
+                        if found and found != "your_fast2sms_api_key_here":
+                            os.environ["FAST2SMS_API_KEY"] = found
+                            return found
+    return key
+
+FAST2SMS_API_KEY = get_fast2sms_api_key()
+
+
+
+def sanitize_phone(num: str) -> str:
+    """Normalize phone number to 10-digit Indian mobile format for Fast2SMS."""
+    digits = "".join(ch for ch in str(num) if ch.isdigit())
+    if len(digits) > 10 and digits.startswith("91"):
+        digits = digits[2:]
+    elif len(digits) > 10 and digits.startswith("0"):
+        digits = digits[1:]
+    return digits[-10:] if len(digits) >= 10 else digits
+
+
+def _get_phones(env_var: str, default: list[str]) -> list[str]:
+    # First check live from .env file so changes take effect immediately without restarting
+    _env_path = Path(__file__).resolve().parent.parent / ".env"
+    if _env_path.exists():
+        try:
+            with open(_env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith(f"{env_var}="):
+                        val = line.split("=", 1)[1].strip().strip("'\"")
+                        parsed = [p.strip() for p in val.split(",") if p.strip()]
+                        cleaned = [sanitize_phone(p) for p in parsed if sanitize_phone(p)]
+                        if cleaned:
+                            return cleaned
+        except Exception:
+            pass
+
+    val = os.getenv(env_var, "")
+    if val:
+        parsed = [p.strip() for p in val.split(",") if p.strip()]
+        cleaned = [sanitize_phone(p) for p in parsed if sanitize_phone(p)]
+        if cleaned:
+            return cleaned
+    return [sanitize_phone(p) for p in default]
+
+
+class _AlertContactsRegistry(dict):
+    """
+    Dynamic registry that reads village phone numbers from backend/.env on demand.
+    Supports ALERT_PHONES_CHOORALMALA, ALERT_PHONES_MUNDAKKAI, or any ALERT_PHONES_<VILLAGE_ID>.
+    """
+    def get(self, village_id: str, default=None):
+        env_var = f"ALERT_PHONES_{village_id.upper()}"
+        # Hardcoded defaults if not specified in .env
+        default_contacts = []
+        if village_id == "chooralmala":
+            default_contacts = ["6303965339", "9581843589"]
+        elif village_id == "mundakkai":
+            default_contacts = ["6304665995"]
+
+        contacts = _get_phones(env_var, default_contacts)
+        if contacts:
+            return contacts
+        return default if default is not None else []
+
+    def __getitem__(self, village_id: str):
+        contacts = self.get(village_id)
+        if not contacts:
+            raise KeyError(village_id)
+        return contacts
+
+    def __contains__(self, village_id: object):
+        if not isinstance(village_id, str):
+            return False
+        return len(self.get(village_id)) > 0
+
+
+# Global dynamic alert contacts registry
+ALERT_CONTACTS = _AlertContactsRegistry()
+
+

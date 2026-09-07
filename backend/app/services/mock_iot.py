@@ -17,7 +17,7 @@ import time
 _STORM_PRESETS = {
     "moderate": {"extra_rain_mm": 40.0, "extra_soil": 0.05},
     "severe": {"extra_rain_mm": 120.0, "extra_soil": 0.12},
-    "extreme": {"extra_rain_mm": 220.0, "extra_soil": 0.18},
+    "extreme": {"extra_rain_mm": 260.0, "extra_soil": 0.22},
 }
 
 _active_boosts: dict[str, dict] = {}

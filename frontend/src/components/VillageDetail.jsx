@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import RiskBadge from "./RiskBadge";
 import TrendChart from "./TrendChart";
+import ScorePanel from "./ScorePanel";
 import { fetchTrend, fetchSensorReading, triggerStorm, clearStorm, RISK_COLORS } from "../api";
 
 const FACTOR_LABELS = {
@@ -96,17 +97,7 @@ export default function VillageDetail({ village, onRefresh }) {
 
   return (
     <div className="detail-pane">
-      <div className="detail-header">
-        <h2>{village.name}</h2>
-        <div className="loc">
-          {village.district}, {village.state} · {village.slope_category} slope
-        </div>
-      </div>
-
-      <div className="risk-score-card">
-        <span className="score">{village.risk_score.toFixed(0)}</span>
-        <RiskBadge level={village.risk_level} />
-      </div>
+      <ScorePanel village={village} />
       <div className="lead-time-note">{leadTimeText}</div>
 
       <div className="section-title">Why this score — factor breakdown</div>

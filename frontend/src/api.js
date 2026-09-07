@@ -50,3 +50,9 @@ export async function fetchReplay(eventId, villageId) {
   });
   return data;
 }
+
+export async function sendVillageAlert(id) {
+  const { data } = await client.post(`/api/villages/${id}/alert`);
+  return data;
+}
+
