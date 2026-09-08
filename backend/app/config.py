@@ -133,17 +133,16 @@ class _AlertContactsRegistry(dict):
     """
     Dynamic registry that reads village phone numbers from backend/.env on demand.
     Supports ALERT_PHONES_CHOORALMALA, ALERT_PHONES_MUNDAKKAI, or any ALERT_PHONES_<VILLAGE_ID>.
+
+    No hardcoded phone numbers here on purpose -- this file is committed to
+    git, and real numbers don't belong in source/history. Configure each
+    village's contacts in backend/.env (gitignored); a village with no
+    ALERT_PHONES_<ID> set simply has no alert contacts, rather than
+    silently falling back to numbers baked into the code.
     """
     def get(self, village_id: str, default=None):
         env_var = f"ALERT_PHONES_{village_id.upper()}"
-        # Hardcoded defaults if not specified in .env
-        default_contacts = []
-        if village_id == "chooralmala":
-            default_contacts = ["6303965339", "9581843589"]
-        elif village_id == "mundakkai":
-            default_contacts = ["6304665995"]
-
-        contacts = _get_phones(env_var, default_contacts)
+        contacts = _get_phones(env_var, [])
         if contacts:
             return contacts
         return default if default is not None else []
