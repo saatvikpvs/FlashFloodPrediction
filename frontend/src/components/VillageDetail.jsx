@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import RiskBadge from "./RiskBadge";
 import TrendChart from "./TrendChart";
 import ScorePanel from "./ScorePanel";
+import RescueRequestModal from "./RescueRequestModal";
 import { fetchSensorReading, triggerStorm, clearStorm, RISK_COLORS } from "../api";
 
 const FACTOR_LABELS = {
@@ -30,6 +31,7 @@ function FactorBar({ label, value }) {
 export default function VillageDetail({ village, onRefresh, trend }) {
   const [sensor, setSensor] = useState(null);
   const [simBusy, setSimBusy] = useState(false);
+  const [rescueModalOpen, setRescueModalOpen] = useState(false);
 
   const pollSensor = useCallback(() => {
     if (!village) return;
@@ -134,6 +136,21 @@ export default function VillageDetail({ village, onRefresh, trend }) {
           Clear simulation
         </button>
       </div>
+
+      <button
+        className="rescue-request-btn"
+        onClick={() => setRescueModalOpen(true)}
+      >
+        🆘 Request Rescue for {village.name}
+      </button>
+
+      {rescueModalOpen && (
+        <RescueRequestModal
+          village={village}
+          onClose={() => setRescueModalOpen(false)}
+          onSubmitted={onRefresh}
+        />
+      )}
 
       <div className="section-title">Rainfall & soil moisture (past 3d / forecast 3d)</div>
       <div className="chart-card">

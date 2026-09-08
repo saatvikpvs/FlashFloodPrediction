@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import replay, villages
+from app.routers import replay, rescue, villages
 
 app = FastAPI(title="Flash Flood & Landslide Early Warning API")
 
@@ -17,6 +17,7 @@ app.add_middleware(
 
 app.include_router(villages.router)
 app.include_router(replay.router)
+app.include_router(rescue.router)
 
 
 @app.get("/")

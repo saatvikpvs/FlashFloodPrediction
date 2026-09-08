@@ -59,3 +59,33 @@ class AlertResponse(BaseModel):
     message: str
     fast2sms_request_id: Optional[str] = None
     mock: bool = False
+
+
+class RescueRequest(BaseModel):
+    id: str
+    village_id: str
+    village_name: str
+    lat: float
+    lon: float
+    severity: str          # "critical" | "urgent" | "moderate"
+    people_count: int
+    notes: str
+    contact: Optional[str] = None
+    status: str            # "pending" | "dispatched" | "resolved"
+    timestamp: str         # ISO-8601 string
+
+
+class RescueRequestCreate(BaseModel):
+    village_id: str
+    village_name: str
+    lat: float
+    lon: float
+    severity: str
+    people_count: int = 1
+    notes: str = ""
+    contact: Optional[str] = None
+
+
+class RescueStatusUpdate(BaseModel):
+    status: str            # "pending" | "dispatched" | "resolved"
+

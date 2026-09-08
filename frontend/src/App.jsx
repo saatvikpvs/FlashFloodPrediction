@@ -3,7 +3,8 @@ import MapView from "./components/MapView";
 import VillageList from "./components/VillageList";
 import VillageDetail from "./components/VillageDetail";
 import ReplayView from "./components/ReplayView";
-import { fetchVillages, fetchTrend } from "./api";
+import RescuePanel from "./components/RescuePanel";
+import { fetchVillages, fetchTrend, fetchRescueRequests } from "./api";
 
 const POLL_MS = 60000;
 
@@ -14,6 +15,9 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [rescueRequests, setRescueRequests] = useState([]);
+  const [rescuePanelOpen, setRescuePanelOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     // One retry with a short delay: a single dropped request (flaky
@@ -27,6 +31,7 @@ export default function App() {
         setSelectedId((prev) => prev ?? [...data].sort((a, b) => b.risk_score - a.risk_score)[0]?.id);
         setLoading(false);
         setLastUpdated(new Date().toLocaleTimeString());
+        setRefreshKey((k) => k + 1);
         return;
       } catch (e) {
         if (attempt === 0) {
@@ -47,6 +52,19 @@ export default function App() {
     const interval = setInterval(refresh, POLL_MS);
     return () => clearInterval(interval);
   }, [refresh]);
+
+  // Poll rescue requests every 10s
+  useEffect(() => {
+    const loadRescue = async () => {
+      try {
+        const data = await fetchRescueRequests();
+        setRescueRequests(data);
+      } catch { /* backend may be offline */ }
+    };
+    loadRescue();
+    const interval = setInterval(loadRescue, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Single shared trend fetch for the selected village, reused by both
   // VillageDetail's chart and the village-list accordion's "current /
@@ -103,6 +121,17 @@ export default function App() {
           <button className={mode === "replay" ? "active" : ""} onClick={() => setMode("replay")}>
             Replay: Wayanad 2024
           </button>
+          <button
+            className={`rescue-header-btn ${rescuePanelOpen ? "active" : ""}`}
+            onClick={() => setRescuePanelOpen((v) => !v)}
+          >
+            🆘 Rescues
+            {rescueRequests.filter((r) => r.status === "pending").length > 0 && (
+              <span className="rescue-header-count">
+                {rescueRequests.filter((r) => r.status === "pending").length}
+              </span>
+            )}
+          </button>
         </div>
       </header>
 
@@ -124,9 +153,24 @@ export default function App() {
             lastUpdated={lastUpdated}
           />
           <div className="map-pane">
-            <MapView villages={villages} selectedId={selectedId} onSelect={setSelectedId} />
+            <MapView
+              villages={villages}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              refreshKey={refreshKey}
+              rescueRequests={rescueRequests}
+            />
           </div>
           <VillageDetail village={selectedVillage} onRefresh={refresh} trend={trend} />
+        </div>
+      )}
+
+      {rescuePanelOpen && (
+        <div className="rescue-panel-overlay">
+          <RescuePanel
+            onClose={() => setRescuePanelOpen(false)}
+            onRequestsChange={setRescueRequests}
+          />
         </div>
       )}
     </div>

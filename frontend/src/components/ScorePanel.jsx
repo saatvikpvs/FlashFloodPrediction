@@ -9,7 +9,10 @@ export default function ScorePanel({ village }) {
 
   if (!village) return null;
 
-  const isSevere = village.risk_score > 90;
+  // Show the alert button for the entire "Severe" band (score ≥ 75).
+  // The backend enforces its own > 90 hard gate and returns a descriptive
+  // 400 error if the score hasn't crossed it yet — displayed in the toast.
+  const isSevere = village.risk_level === "Severe";
   const canSendAlert = Boolean(village.has_alert_contacts && isSevere);
 
   async function handleSendAlert() {
@@ -87,7 +90,8 @@ export default function ScorePanel({ village }) {
             </span>
           </button>
           <div className="alert-subtext">
-            Severe threshold crossed (&gt;90). Fast2SMS dispatch ready.
+            Severe risk detected. SMS dispatch via Fast2SMS
+            {village.risk_score >= 91 ? " ready." : " — crosses send threshold at score > 90."}
           </div>
         </div>
       )}
