@@ -56,3 +56,23 @@ export async function sendVillageAlert(id) {
   return data;
 }
 
+// ── Rescue request API ────────────────────────────────────────────────────────
+
+export async function fetchRescueRequests() {
+  const { data } = await client.get("/api/rescue");
+  return data;
+}
+
+export async function submitRescueRequest(payload) {
+  const { data } = await client.post("/api/rescue", payload);
+  return data;
+}
+
+export async function updateRescueStatus(id, status) {
+  const { data } = await client.patch(`/api/rescue/${id}/status`, { status });
+  return data;
+}
+
+export async function deleteRescueRequest(id) {
+  await client.delete(`/api/rescue/${id}`);
+}

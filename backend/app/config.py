@@ -159,5 +159,3 @@ class _AlertContactsRegistry(dict):
 
 # Global dynamic alert contacts registry
 ALERT_CONTACTS = _AlertContactsRegistry()
-
-
