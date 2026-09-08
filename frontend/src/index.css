@@ -139,6 +139,107 @@ button {
   color: var(--text-dim);
 }
 
+.village-item {
+  margin-bottom: 6px;
+}
+
+.village-item .village-card {
+  margin-bottom: 0;
+}
+
+.village-card-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accordion-caret {
+  color: var(--text-dim);
+  font-size: 11px;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.accordion-caret.open {
+  transform: rotate(-180deg);
+}
+
+.village-accordion-panel {
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 10px 12px 12px;
+  margin-top: -6px;
+  margin-bottom: 6px;
+  cursor: default;
+}
+
+.accordion-section + .accordion-section {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+.accordion-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.tag-live {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+}
+
+.tag-static {
+  color: var(--text-dim);
+  background: rgba(147, 161, 189, 0.1);
+  border: 1px solid var(--border);
+}
+
+.accordion-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  padding: 3px 0;
+  line-height: 1.4;
+}
+
+.accordion-row .k {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.accordion-row .v {
+  color: var(--text);
+  text-align: right;
+  font-weight: 500;
+}
+
+.accordion-notes {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
 .risk-badge {
   display: inline-flex;
   align-items: center;

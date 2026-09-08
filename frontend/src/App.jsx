@@ -3,7 +3,7 @@ import MapView from "./components/MapView";
 import VillageList from "./components/VillageList";
 import VillageDetail from "./components/VillageDetail";
 import ReplayView from "./components/ReplayView";
-import { fetchVillages } from "./api";
+import { fetchVillages, fetchTrend } from "./api";
 
 const POLL_MS = 60000;
 
@@ -13,6 +13,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const refresh = useCallback(async () => {
     // One retry with a short delay: a single dropped request (flaky
@@ -25,6 +26,7 @@ export default function App() {
         setError(null);
         setSelectedId((prev) => prev ?? [...data].sort((a, b) => b.risk_score - a.risk_score)[0]?.id);
         setLoading(false);
+        setLastUpdated(new Date().toLocaleTimeString());
         return;
       } catch (e) {
         if (attempt === 0) {
@@ -45,6 +47,41 @@ export default function App() {
     const interval = setInterval(refresh, POLL_MS);
     return () => clearInterval(interval);
   }, [refresh]);
+
+  // Single shared trend fetch for the selected village, reused by both
+  // VillageDetail's chart and the village-list accordion's "current /
+  // forecast rainfall" line, so switching villages doesn't trigger two
+  // independent requests for the same data.
+  const [trend, setTrend] = useState(null);
+  const [trendLoading, setTrendLoading] = useState(false);
+  const [trendError, setTrendError] = useState(false);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setTrend(null);
+      return;
+    }
+    let cancelled = false;
+    setTrend(null);
+    setTrendLoading(true);
+    setTrendError(false);
+    fetchTrend(selectedId)
+      .then((data) => {
+        if (!cancelled) {
+          setTrend(data);
+          setTrendLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setTrendLoading(false);
+          setTrendError(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedId]);
 
   const selectedVillage = villages.find((v) => v.id === selectedId) || null;
 
@@ -73,11 +110,19 @@ export default function App() {
         <div className="error-banner">{error}</div>
       ) : (
         <div className="app-body">
-          <VillageList villages={villages} selectedId={selectedId} onSelect={setSelectedId} />
+          <VillageList
+            villages={villages}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            trend={trend}
+            trendLoading={trendLoading}
+            trendError={trendError}
+            lastUpdated={lastUpdated}
+          />
           <div className="map-pane">
             <MapView villages={villages} selectedId={selectedId} onSelect={setSelectedId} />
           </div>
-          <VillageDetail village={selectedVillage} onRefresh={refresh} />
+          <VillageDetail village={selectedVillage} onRefresh={refresh} trend={trend} />
         </div>
       )}
     </div>

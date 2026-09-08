@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import RiskBadge from "./RiskBadge";
 import TrendChart from "./TrendChart";
 import ScorePanel from "./ScorePanel";
-import { fetchTrend, fetchSensorReading, triggerStorm, clearStorm, RISK_COLORS } from "../api";
+import { fetchSensorReading, triggerStorm, clearStorm, RISK_COLORS } from "../api";
 
 const FACTOR_LABELS = {
   rainfall_score: "Rainfall intensity",
@@ -27,21 +27,9 @@ function FactorBar({ label, value }) {
   );
 }
 
-export default function VillageDetail({ village, onRefresh }) {
-  const [trend, setTrend] = useState(null);
+export default function VillageDetail({ village, onRefresh, trend }) {
   const [sensor, setSensor] = useState(null);
   const [simBusy, setSimBusy] = useState(false);
-
-  useEffect(() => {
-    if (!village) return;
-    let cancelled = false;
-    fetchTrend(village.id).then((data) => {
-      if (!cancelled) setTrend(data);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [village?.id]);
 
   const pollSensor = useCallback(() => {
     if (!village) return;
