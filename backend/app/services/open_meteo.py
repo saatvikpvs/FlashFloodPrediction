@@ -59,12 +59,21 @@ def fetch_live_conditions(lat: float, lon: float) -> dict:
     }
     data = _cached_get(OPEN_METEO_FORECAST_URL, params, f"live:{lat}:{lon}")
     if not data or "hourly" not in data:
+        # Keep this shaped identically to the success return below (same
+        # keys, just empty) -- callers like routers/villages.py:get_trend
+        # index into all_times/all_precip/all_soil/now_index unconditionally,
+        # and a missing key here used to raise an unhandled KeyError (500)
+        # whenever Open-Meteo was unreachable or slow.
         return {
             "rain_24h_mm": 0.0,
             "rain_72h_mm": 0.0,
             "soil_moisture_m3m3": 0.0,
             "hourly_times": [],
             "hourly_precip": [],
+            "all_times": [],
+            "all_precip": [],
+            "all_soil": [],
+            "now_index": 0,
             "available": False,
         }
 

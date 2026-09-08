@@ -48,7 +48,12 @@ def get_trend(village_id: str):
         }
         for t, p, s in zip(live["all_times"], live["all_precip"], live["all_soil"])
     ]
-    return {"village_id": village_id, "now_index": live["now_index"], "points": points}
+    return {
+        "village_id": village_id,
+        "now_index": live["now_index"],
+        "points": points,
+        "available": live["available"],
+    }
 
 
 @router.post("/{village_id}/simulate")

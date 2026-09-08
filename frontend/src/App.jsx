@@ -70,6 +70,10 @@ export default function App() {
         if (!cancelled) {
           setTrend(data);
           setTrendLoading(false);
+          // The endpoint can return 200 with an empty series when
+          // Open-Meteo itself was unreachable/slow -- surface that as
+          // "unavailable" too, not just a network-level fetch failure.
+          setTrendError(data.available === false);
         }
       })
       .catch(() => {
