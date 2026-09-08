@@ -139,10 +139,7 @@ class _AlertContactsRegistry(dict):
         # Hardcoded defaults if not specified in .env
         default_contacts = []
         if village_id == "chooralmala":
-            default_contacts = ["6303965339", "9581843589"]
-        elif village_id == "mundakkai":
-            default_contacts = ["6304665995"]
-
+            default_contacts = ["6303965339", "9581843589","8247892167","6304665995","9885275333","9121074387"]
         contacts = _get_phones(env_var, default_contacts)
         if contacts:
             return contacts
