@@ -333,6 +333,67 @@ button {
   margin: 20px 0 10px;
 }
 
+.replay-entry-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  margin-top: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.replay-entry-btn:hover {
+  background: rgba(59, 130, 246, 0.22);
+  border-color: var(--accent);
+}
+
+.citizen-risk-badge-row {
+  margin: 14px 0 16px;
+}
+
+.citizen-risk-badge-row .risk-badge {
+  font-size: 15px;
+  padding: 6px 14px;
+}
+
+.citizen-status-text {
+  font-size: 14px;
+  border-width: 2px;
+}
+
+.detail-tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--panel-alt);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-top: 16px;
+}
+
+.detail-tabs button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.detail-tabs button.active {
+  background: var(--accent);
+  color: white;
+}
+
 .factor-row {
   margin-bottom: 10px;
 }

@@ -142,12 +142,8 @@ class _AlertContactsRegistry(dict):
     """
     def get(self, village_id: str, default=None):
         env_var = f"ALERT_PHONES_{village_id.upper()}"
-        # Hardcoded defaults if not specified in .env
-        default_contacts = []
-        if village_id == "chooralmala":
-            default_contacts = ["6303965339", "9581843589","8247892167","6304665995","9885275333","9121074387"]
-        contacts = _get_phones(env_var, default_contacts)
-        
+        contacts = _get_phones(env_var, [])
+
         if contacts:
             return contacts
         return default if default is not None else []

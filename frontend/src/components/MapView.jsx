@@ -80,7 +80,18 @@ const helicopterIcon = L.divIcon({
 function FlyToVillage({ village }) {
   const map = useMap();
   useEffect(() => {
-    if (village) map.flyTo([village.lat, village.lon], 13, { duration: 0.6 });
+    if (!village || !Number.isFinite(village.lat) || !Number.isFinite(village.lon)) return;
+    try {
+      // Leaflet can compute NaN pixel offsets if flyTo fires before the
+      // container has a committed size (React StrictMode's dev-only
+      // double-mount reliably hits this); invalidateSize forces Leaflet
+      // to re-measure first, and the try/catch keeps a rare miss from
+      // throwing uncaught and blanking the whole app (no error boundary).
+      map.invalidateSize();
+      map.flyTo([village.lat, village.lon], 13, { duration: 0.6 });
+    } catch {
+      /* transient Leaflet sizing glitch -- safe to skip this fly-to */
+    }
   }, [village, map]);
   return null;
 }
@@ -94,10 +105,10 @@ function routeColor(status) {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export default function MapView({ villages, selectedId, onSelect, refreshKey, rescueRequests = [] }) {
+export default function MapView({ villages, selectedId, onSelect, refreshKey, rescueRequests = [], defaultShowRoutes = false }) {
   const selected = villages.find((v) => v.id === selectedId);
   const [layerKey, setLayerKey] = useState("street");
-  const [showRoutes, setShowRoutes] = useState(false);
+  const [showRoutes, setShowRoutes] = useState(defaultShowRoutes);
 
   // routeCache: { [villageId]: { coords, blocked, status, loading } }
   const [routeCache, setRouteCache] = useState({});

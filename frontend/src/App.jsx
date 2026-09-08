@@ -4,6 +4,7 @@ import VillageList from "./components/VillageList";
 import VillageDetail from "./components/VillageDetail";
 import ReplayView from "./components/ReplayView";
 import RescuePanel from "./components/RescuePanel";
+import CitizenView from "./components/CitizenView";
 import { fetchVillages, fetchTrend, fetchRescueRequests } from "./api";
 
 const POLL_MS = 60000;
@@ -118,20 +119,22 @@ export default function App() {
           <button className={mode === "live" ? "active" : ""} onClick={() => setMode("live")}>
             Live Dashboard
           </button>
-          <button className={mode === "replay" ? "active" : ""} onClick={() => setMode("replay")}>
-            Replay: Wayanad 2024
+          <button className={mode === "citizen" ? "active" : ""} onClick={() => setMode("citizen")}>
+            Citizen View
           </button>
-          <button
-            className={`rescue-header-btn ${rescuePanelOpen ? "active" : ""}`}
-            onClick={() => setRescuePanelOpen((v) => !v)}
-          >
-            🆘 Rescues
-            {rescueRequests.filter((r) => r.status === "pending").length > 0 && (
-              <span className="rescue-header-count">
-                {rescueRequests.filter((r) => r.status === "pending").length}
-              </span>
-            )}
-          </button>
+          {mode !== "citizen" && (
+            <button
+              className={`rescue-header-btn ${rescuePanelOpen ? "active" : ""}`}
+              onClick={() => setRescuePanelOpen((v) => !v)}
+            >
+              🆘 Rescues
+              {rescueRequests.filter((r) => r.status === "pending").length > 0 && (
+                <span className="rescue-header-count">
+                  {rescueRequests.filter((r) => r.status === "pending").length}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </header>
 
@@ -141,6 +144,15 @@ export default function App() {
         <div className="loading">Loading live conditions from Open-Meteo…</div>
       ) : error ? (
         <div className="error-banner">{error}</div>
+      ) : mode === "citizen" ? (
+        <CitizenView
+          villages={villages}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          refreshKey={refreshKey}
+          rescueRequests={rescueRequests}
+          onRefresh={refresh}
+        />
       ) : (
         <div className="app-body">
           <VillageList
@@ -161,11 +173,16 @@ export default function App() {
               rescueRequests={rescueRequests}
             />
           </div>
-          <VillageDetail village={selectedVillage} onRefresh={refresh} trend={trend} />
+          <VillageDetail
+            village={selectedVillage}
+            onRefresh={refresh}
+            trend={trend}
+            onOpenReplay={() => setMode("replay")}
+          />
         </div>
       )}
 
-      {rescuePanelOpen && (
+      {rescuePanelOpen && mode !== "citizen" && (
         <div className="rescue-panel-overlay">
           <RescuePanel
             onClose={() => setRescuePanelOpen(false)}

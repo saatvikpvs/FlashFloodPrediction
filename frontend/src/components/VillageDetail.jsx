@@ -28,10 +28,11 @@ function FactorBar({ label, value }) {
   );
 }
 
-export default function VillageDetail({ village, onRefresh, trend }) {
+export default function VillageDetail({ village, onRefresh, trend, onOpenReplay }) {
   const [sensor, setSensor] = useState(null);
   const [simBusy, setSimBusy] = useState(false);
   const [rescueModalOpen, setRescueModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const pollSensor = useCallback(() => {
     if (!village) return;
@@ -90,59 +91,100 @@ export default function VillageDetail({ village, onRefresh, trend }) {
       <ScorePanel village={village} />
       <div className="lead-time-note">{leadTimeText}</div>
 
-      <div className="section-title">Why this score — factor breakdown</div>
-      {Object.entries(FACTOR_LABELS).map(([key, label]) => (
-        <FactorBar key={key} label={label} value={village.factors[key]} />
-      ))}
-
-      <div className="notes-card">
-        {village.notes}
-        <br />
-        Rain (24h): {village.rain_24h_mm}mm · Rain (72h): {village.rain_72h_mm}mm · Soil moisture:{" "}
-        {village.soil_moisture_m3m3} m³/m³
-        {village.river_discharge_m3s != null && <> · River discharge: {village.river_discharge_m3s} m³/s</>}
+      <div className="detail-tabs">
+        <button
+          className={activeTab === "overview" ? "active" : ""}
+          onClick={() => setActiveTab("overview")}
+        >
+          Overview
+        </button>
+        <button
+          className={activeTab === "demo" ? "active" : ""}
+          onClick={() => setActiveTab("demo")}
+        >
+          Demo Controls
+        </button>
       </div>
 
-      <div className="section-title">Simulated IoT sensor feed</div>
-      <div className="sensor-card">
-        <div className="sensor-tile">
-          <div className="label">
-            <span className="pulse-dot" />
-            Soil moisture probe
+      {activeTab === "overview" && (
+        <>
+          <div className="section-title">Why this score — factor breakdown</div>
+          {Object.entries(FACTOR_LABELS).map(([key, label]) => (
+            <FactorBar key={key} label={label} value={village.factors[key]} />
+          ))}
+
+          <div className="notes-card">
+            {village.notes}
+            <br />
+            Rain (24h): {village.rain_24h_mm}mm · Rain (72h): {village.rain_72h_mm}mm · Soil moisture:{" "}
+            {village.soil_moisture_m3m3} m³/m³
+            {village.river_discharge_m3s != null && <> · River discharge: {village.river_discharge_m3s} m³/s</>}
           </div>
-          <div className="val">{sensor ? `${sensor.soil_moisture_m3m3} m³/m³` : "…"}</div>
-        </div>
-        <div className="sensor-tile">
-          <div className="label">
-            <span className="pulse-dot" />
-            Water level sensor
+
+          <button
+            className="rescue-request-btn"
+            onClick={() => setRescueModalOpen(true)}
+          >
+            🆘 Request Rescue for {village.name}
+          </button>
+
+          <div className="section-title">Rainfall & soil moisture (past 3d / forecast 3d)</div>
+          <div className="chart-card">
+            {trend ? (
+              <TrendChart points={trend.points} nowIndex={trend.now_index} timeMode="utc" />
+            ) : (
+              <div className="loading">Loading trend…</div>
+            )}
           </div>
-          <div className="val">{sensor ? `${sensor.water_level_cm} cm` : "…"}</div>
-        </div>
-      </div>
+        </>
+      )}
 
-      <div className="section-title">Simulate a storm (demo)</div>
-      <div className="sim-controls">
-        <button disabled={simBusy} onClick={() => handleSimulate("moderate")}>
-          Moderate
-        </button>
-        <button disabled={simBusy} onClick={() => handleSimulate("severe")}>
-          Severe
-        </button>
-        <button disabled={simBusy} onClick={() => handleSimulate("extreme")}>
-          Extreme
-        </button>
-        <button className="clear" disabled={simBusy} onClick={handleClear}>
-          Clear simulation
-        </button>
-      </div>
+      {activeTab === "demo" && (
+        <>
+          <div className="section-title">Simulated IoT sensor feed</div>
+          <div className="sensor-card">
+            <div className="sensor-tile">
+              <div className="label">
+                <span className="pulse-dot" />
+                Soil moisture probe
+              </div>
+              <div className="val">{sensor ? `${sensor.soil_moisture_m3m3} m³/m³` : "…"}</div>
+            </div>
+            <div className="sensor-tile">
+              <div className="label">
+                <span className="pulse-dot" />
+                Water level sensor
+              </div>
+              <div className="val">{sensor ? `${sensor.water_level_cm} cm` : "…"}</div>
+            </div>
+          </div>
 
-      <button
-        className="rescue-request-btn"
-        onClick={() => setRescueModalOpen(true)}
-      >
-        🆘 Request Rescue for {village.name}
-      </button>
+          <div className="section-title">Simulate a storm (demo)</div>
+          <div className="sim-controls">
+            <button disabled={simBusy} onClick={() => handleSimulate("moderate")}>
+              Moderate
+            </button>
+            <button disabled={simBusy} onClick={() => handleSimulate("severe")}>
+              Severe
+            </button>
+            <button disabled={simBusy} onClick={() => handleSimulate("extreme")}>
+              Extreme
+            </button>
+            <button className="clear" disabled={simBusy} onClick={handleClear}>
+              Clear simulation
+            </button>
+          </div>
+
+          <div className="section-title">Proof it works — accuracy evidence</div>
+          <div className="notes-card">
+            Replay the 30 July 2024 Wayanad landslide through this same scoring engine and see
+            it flag Severe risk hours before the disaster struck.
+          </div>
+          <button className="replay-entry-btn" onClick={onOpenReplay}>
+            📊 Open Wayanad 2024 Replay
+          </button>
+        </>
+      )}
 
       {rescueModalOpen && (
         <RescueRequestModal
@@ -151,15 +193,6 @@ export default function VillageDetail({ village, onRefresh, trend }) {
           onSubmitted={onRefresh}
         />
       )}
-
-      <div className="section-title">Rainfall & soil moisture (past 3d / forecast 3d)</div>
-      <div className="chart-card">
-        {trend ? (
-          <TrendChart points={trend.points} nowIndex={trend.now_index} timeMode="utc" />
-        ) : (
-          <div className="loading">Loading trend…</div>
-        )}
-      </div>
     </div>
   );
 }
