@@ -105,17 +105,25 @@ function routeColor(status) {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export default function MapView({ villages, selectedId, onSelect, refreshKey, rescueRequests = [], defaultShowRoutes = false }) {
+export default function MapView({
+  villages,
+  selectedId,
+  onSelect,
+  refreshKey,
+  rescueRequests = [],
+  defaultShowRoutes = false,
+  routesEnabled = true,
+}) {
   const selected = villages.find((v) => v.id === selectedId);
   const [layerKey, setLayerKey] = useState("street");
-  const [showRoutes, setShowRoutes] = useState(defaultShowRoutes);
+  const [showRoutes, setShowRoutes] = useState(routesEnabled && defaultShowRoutes);
 
   // routeCache: { [villageId]: { coords, blocked, status, loading } }
   const [routeCache, setRouteCache] = useState({});
   const abortRef = useRef({});
 
   // ── Compute which villages to route for ────────────────────────────────────
-  const routeVillageIds = showRoutes
+  const routeVillageIds = routesEnabled && showRoutes
     ? selectedId && EVACUATION_BY_VILLAGE[selectedId]
       ? [selectedId]
       : Object.keys(EVACUATION_BY_VILLAGE)
@@ -366,7 +374,7 @@ export default function MapView({ villages, selectedId, onSelect, refreshKey, re
       </MapContainer>
 
       {/* ── Route status banner ── */}
-      {showRoutes && (anyBlocked || anyRerouted || anyLoading) && (
+      {routesEnabled && showRoutes && (anyBlocked || anyRerouted || anyLoading) && (
         <div
           className={`route-status-banner ${
             anyBlocked ? "banner-blocked" : anyRerouted ? "banner-rerouted" : "banner-loading"
@@ -381,7 +389,7 @@ export default function MapView({ villages, selectedId, onSelect, refreshKey, re
       )}
 
       {/* ── Legend (shown when routes visible) ── */}
-      {showRoutes && !anyLoading && (
+      {routesEnabled && showRoutes && !anyLoading && (
         <div className="route-legend">
           <div className="route-legend-item">
             <span className="route-legend-line" style={{ background: "#22c55e" }} />
@@ -419,24 +427,26 @@ export default function MapView({ villages, selectedId, onSelect, refreshKey, re
       </button>
 
       {/* ── Evacuation routes toggle ── */}
-      <button
-        className={`evacuation-toggle ${showRoutes ? "active" : ""}`}
-        onClick={() => setShowRoutes((v) => !v)}
-        aria-label="Toggle evacuation routes"
-      >
-        <span className="evacuation-toggle-icon">🚨</span>
-        <span className="evacuation-toggle-text">
-          {showRoutes ? "Hide Routes" : "Evacuation Routes"}
-        </span>
-        {showRoutes && anyLoading && (
-          <span className="evacuation-toggle-badge loading">…</span>
-        )}
-        {showRoutes && !anyLoading && (
-          <span className={`evacuation-toggle-badge ${anyBlocked ? "blocked" : ""}`}>
-            {anyBlocked ? "⛔" : "ON"}
+      {routesEnabled && (
+        <button
+          className={`evacuation-toggle ${showRoutes ? "active" : ""}`}
+          onClick={() => setShowRoutes((v) => !v)}
+          aria-label="Toggle evacuation routes"
+        >
+          <span className="evacuation-toggle-icon">🚨</span>
+          <span className="evacuation-toggle-text">
+            {showRoutes ? "Hide Routes" : "Evacuation Routes"}
           </span>
-        )}
-      </button>
+          {showRoutes && anyLoading && (
+            <span className="evacuation-toggle-badge loading">…</span>
+          )}
+          {showRoutes && !anyLoading && (
+            <span className={`evacuation-toggle-badge ${anyBlocked ? "blocked" : ""}`}>
+              {anyBlocked ? "⛔" : "ON"}
+            </span>
+          )}
+        </button>
+      )}
     </div>
   );
 }

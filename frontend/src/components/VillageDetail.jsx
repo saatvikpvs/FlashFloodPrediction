@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import RiskBadge from "./RiskBadge";
 import TrendChart from "./TrendChart";
 import ScorePanel from "./ScorePanel";
-import RescueRequestModal from "./RescueRequestModal";
 import { fetchSensorReading, triggerStorm, clearStorm, RISK_COLORS } from "../api";
 
 const FACTOR_LABELS = {
@@ -31,7 +30,6 @@ function FactorBar({ label, value }) {
 export default function VillageDetail({ village, onRefresh, trend, onOpenReplay }) {
   const [sensor, setSensor] = useState(null);
   const [simBusy, setSimBusy] = useState(false);
-  const [rescueModalOpen, setRescueModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
   const pollSensor = useCallback(() => {
@@ -121,13 +119,6 @@ export default function VillageDetail({ village, onRefresh, trend, onOpenReplay 
             {village.river_discharge_m3s != null && <> · River discharge: {village.river_discharge_m3s} m³/s</>}
           </div>
 
-          <button
-            className="rescue-request-btn"
-            onClick={() => setRescueModalOpen(true)}
-          >
-            🆘 Request Rescue for {village.name}
-          </button>
-
           <div className="section-title">Rainfall & soil moisture (past 3d / forecast 3d)</div>
           <div className="chart-card">
             {trend ? (
@@ -184,14 +175,6 @@ export default function VillageDetail({ village, onRefresh, trend, onOpenReplay 
             📊 Open Wayanad 2024 Replay
           </button>
         </>
-      )}
-
-      {rescueModalOpen && (
-        <RescueRequestModal
-          village={village}
-          onClose={() => setRescueModalOpen(false)}
-          onSubmitted={onRefresh}
-        />
       )}
     </div>
   );

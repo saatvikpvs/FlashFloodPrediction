@@ -171,6 +171,7 @@ export default function App() {
               onSelect={setSelectedId}
               refreshKey={refreshKey}
               rescueRequests={rescueRequests}
+              routesEnabled={false}
             />
           </div>
           <VillageDetail
